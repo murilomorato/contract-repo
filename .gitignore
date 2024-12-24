@@ -1,0 +1,66 @@
+/build/resources/main/application.properties
+# Default ignored files
+/shelf/
+/workspace.xml
+
+# Diretórios e arquivos de build gerados
+/build/
+/out/
+/target/
+
+# Arquivos do IntelliJ IDEA
+/.idea/
+/*.iml
+/*.ipr
+/*.iws
+
+# Arquivos de cache do Gradle
+/.gradle/
+/gradle/wrapper/gradle-wrapper.jar
+
+# Arquivos de log
+*.log
+
+# Arquivos temporários do sistema operacional
+.DS_Store
+Thumbs.db
+
+# Arquivos de cache do Maven
+.mvn/
+
+# Arquivos de configuração locais
+*.properties
+*.env
+.env
+/src/main/resources/application-local.properties
+
+# Arquivos de debug do Spring Boot DevTools
+/.restart/
+
+# Arquivos do Kotlin Compiler
+*.class
+*.kotlin_module
+
+# Test Reports
+/test-results/
+/test-output/
+
+# Arquivos gerados pelo IDE e sistema de execução
+*.swp
+*.swo
+*.bak
+
+# Arquivos relacionados ao Docker, se aplicável
+docker-compose.override.yml
+
+# Configurações de segurança
+secrets/
+
+# Outros arquivos que podem ser gerados por ferramentas
+*.tmp
+*.pid
+
+# Excluir arquivos gerados por plugins específicos, se usados
+*.jar
+*.war
+*.ear

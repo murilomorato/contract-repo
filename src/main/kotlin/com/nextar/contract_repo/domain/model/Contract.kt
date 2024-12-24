@@ -1,0 +1,19 @@
+package com.nextar.contract_repo.domain.model
+
+import com.fasterxml.jackson.databind.JsonNode
+import org.springframework.data.annotation.Id
+import org.springframework.data.mongodb.core.mapping.Document
+import java.time.Instant
+
+@Document(collection = "contracts")
+data class Contract (
+    @Id
+    val id: String? = null,
+    val modelId: Int,
+    val sentBy: String,
+    val provider: String,
+    val consumer: String,
+    val contract: String,
+    val version: Int,
+    val createdAt: Instant = Instant.now()
+)
