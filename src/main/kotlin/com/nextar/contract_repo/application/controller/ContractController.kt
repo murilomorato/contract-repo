@@ -20,13 +20,12 @@ class ContractController(private val contractService: ContractService) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf(
                 "success" to false,"message" to "Contract is required"))
         }
+        if (request.sentBy != request.consumer && request.sentBy != request.provider) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf(
+                "success" to false,"message" to "Only consumer and provider can update contracts"))
+        }
 
         val contract = contractService.createContractFromRequest(request)
-
-        if (contract.sentBy != contract.consumer) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf(
-                "success" to false,"message" to "Only consumers must update contracts"))
-        }
 
         val savedContract = contractService.saveContract(contract)
         return ResponseEntity.status(HttpStatus.CREATED)
@@ -37,15 +36,15 @@ class ContractController(private val contractService: ContractService) {
 
     @GetMapping("/latest-version")
     fun getLatestVersionContract(@RequestParam("model_id") modelId: Int,
-                                 @RequestParam("provider") provider: String,
-                                 @RequestParam("consumer") consumer: String): ResponseEntity<Any> {
+                                 @RequestParam("contractType") contractType: String): ResponseEntity<Any> {
 
-        val contractDoc = contractService.getContractWithLatestVersion(modelId = modelId, provider = provider, consumer = consumer)
+        val contractDoc = contractService.getContractWithLatestVersion(modelId = modelId, contractType = contractType)
         return if (contractDoc != null) {
             val formattedContract = reserializeContract(contractDoc.contract)
                 val contractInDTO = GetLatestContractRequest(
                     id = contractDoc.id,
                     sentBy = contractDoc.sentBy,
+                    contractType = contractDoc.contractType,
                     modelId = contractDoc.modelId,
                     provider = contractDoc.provider,
                     consumer = contractDoc.consumer,

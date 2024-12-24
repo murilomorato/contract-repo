@@ -11,4 +11,5 @@ interface ContractRepository : MongoRepository<Contract, String> {
 
     fun findTopByModelIdAndProviderAndConsumerOrderByVersionDesc(modelId: Int, provider: String, consumer: String): Contract?
 
+    fun findTopByModelIdAndContractTypeOrderByVersionDesc(modelId: Int, contractType: String): Contract?
 }

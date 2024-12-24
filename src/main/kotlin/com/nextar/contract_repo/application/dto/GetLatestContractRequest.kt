@@ -6,9 +6,10 @@ import java.time.Instant
 data class GetLatestContractRequest(
     val id: String?,
     val modelId: Int,
+    val sentBy: String,
     val provider: String,
     val consumer: String,
-    val sentBy: String,
+    val contractType: String,
     val contract: JsonNode,
     val version: Int,
     val createdAt: Instant
