@@ -8,6 +8,9 @@ import org.springframework.stereotype.Service
 @Service
 class ContractService(private val contractRepository: ContractRepository) {
 
+    /** Função que converte uma request de contrato em objeto de domínio com os campos ignoráveis formatados.
+     * @param request objeto tipado no DTO da request de entrada da api /contract/submit
+     * @return objeto de domínio de contrato */
     fun createContractFromRequest(request: CreateContractRequest): Contract {
 
         val validContract = ignoreKeyValues(modelId = request.modelId!!, contractJson = request.contract!!)
@@ -19,7 +22,7 @@ class ContractService(private val contractRepository: ContractRepository) {
             provider = request.provider!!,
             consumer = request.consumer!!,
             contract = deserializeContract(validContract),
-            version = getLatestVersion(modelId = request.modelId, provider = request.provider, consumer = request.consumer)
+            version = getLatestVersionNumber(modelId = request.modelId, provider = request.provider, consumer = request.consumer)
         )
 
         return domainContract
@@ -32,13 +35,13 @@ class ContractService(private val contractRepository: ContractRepository) {
     fun getAllContracts(): List<Contract> {
         return contractRepository.findAll()
     }
-
-    fun getLatestVersion(modelId: Int, provider: String, consumer: String) : Int {
+    /** Busca a última versão do contrato(consumer ou provider) e retorna versão+1. */
+    fun getLatestVersionNumber(modelId: Int, provider: String, consumer: String) : Int {
         val latestContract = contractRepository.findTopByModelIdAndProviderAndConsumerOrderByVersionDesc(modelId, provider, consumer)
         val newVersion = if (latestContract == null) 1 else latestContract.version + 1
         return newVersion
     }
-
+    /** Retorna a última versão do contrato de acordo com o parâmetro (modelId, consumer/provider). */
     fun getContractWithLatestVersion(modelId: Int, contractType: String): Contract? {
         return contractRepository.findTopByModelIdAndContractTypeOrderByVersionDesc(modelId, contractType)
     }
