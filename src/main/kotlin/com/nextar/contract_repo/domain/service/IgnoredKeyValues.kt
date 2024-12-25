@@ -3,6 +3,8 @@ package com.nextar.contract_repo.domain.service
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 
+/** Recebe um JsonNode e modelId. Substitui os key values por placeholders que skipam a validação.
+ * @return JsonNode com placeholders que pulam a validação de comparação */
 fun ignoreKeyValues(modelId: Int, contractJson: JsonNode): JsonNode {
     return when (modelId) {
         1 -> modelId1ignoredValues(contractJson)
