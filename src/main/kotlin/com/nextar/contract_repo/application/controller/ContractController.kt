@@ -3,11 +3,13 @@ package com.nextar.contract_repo.application.controller
 import com.nextar.contract_repo.application.dto.CreateContractRequest
 import com.nextar.contract_repo.application.dto.GetLatestContractRequest
 import com.nextar.contract_repo.domain.service.ContractService
+import com.nextar.contract_repo.domain.service.jsonCompare
 import com.nextar.contract_repo.domain.service.reserializeContract
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.*
+
 
 @RestController
 @RequestMapping("/contracts")
@@ -38,7 +40,7 @@ class ContractController(private val contractService: ContractService) {
     fun getLatestVersionContract(@RequestParam("model_id") modelId: Int,
                                  @RequestParam("contractType") contractType: String): ResponseEntity<Any> {
 
-        val contractDoc = contractService.getContractWithLatestVersion(modelId = modelId, contractType = contractType)
+        val contractDoc = contractService.getContractWithLatestVersion(modelId = modelId, contractType = contractType.lowercase())
         return if (contractDoc != null) {
             val formattedContract = reserializeContract(contractDoc.contract)
                 val contractInDTO = GetLatestContractRequest(
@@ -55,34 +57,48 @@ class ContractController(private val contractService: ContractService) {
             ResponseEntity.ok(contractInDTO)
         } else {
             ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(mapOf("success" to false, "message" to "No contract found for modelId=$modelId"))
+                .body(mapOf("success" to false, "message" to "No contract found for modelId=$modelId or contractType=$contractType") )
         }
     }
 
-//    @PostMapping("/can-i-deploy")
-//    fun canIDeploy(@RequestBody @Valid request: CreateContractRequest): ResponseEntity<Any> {
-//
-//        val latestContractInDb = contractService.getContractWithLatestVersion(modelId = request.modelId!!, provider = request.provider!!, consumer = request.consumer!!)
-//        return if (latestContractInDb != null) {
-//            val formattedContract = reserializeContract(latestContractInDb.contract)
-//            val contractInDTO = GetLatestContractRequest(
-//                id = latestContractInDb.id,
-//                modelId = latestContractInDb.modelId,
-//                provider = latestContractInDb.provider,
-//                consumer = latestContractInDb.consumer,
-//                contract = formattedContract,
-//                version = latestContractInDb.version,
-//                createdAt = latestContractInDb.createdAt
-//            )
-//            val contractJson = ObjectMapper().readTree(request.contract)
-//            val latestContractJson = ObjectMapper().readTree(contractInDTO.contract)
-//            val canDeploy = contractJson == latestContractJson
-//            ResponseEntity.ok(mapOf("canDeploy" to canDeploy))
-//        } else {
-//            ResponseEntity.status(HttpStatus.NOT_FOUND)
-//                .body(mapOf("success" to false, "message" to "No contract found for modelId=${request.modelId}"))
-//        }
-//    }
+    @PostMapping("/can-i-deploy")
+    fun canIDeploy(@RequestBody @Valid request: CreateContractRequest): ResponseEntity<Any> {
 
+        if (request.contract?.isNull == true) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(mapOf(
+                "success" to false,"message" to "Contract is required"))
+        }
 
+        val contractUnderTest = contractService.createContractFromRequest(request)
+        val contractTypeToCompare = if (contractUnderTest.contractType.lowercase() == "provider") "consumer" else "provider"
+        val latestContractInDb = contractService.getContractWithLatestVersion(modelId = contractUnderTest.modelId, contractType = contractTypeToCompare)
+
+        return if (latestContractInDb != null) {
+            val contractInDb = GetLatestContractRequest(
+                id = latestContractInDb.id,
+                modelId = latestContractInDb.modelId,
+                sentBy = latestContractInDb.sentBy,
+                provider = latestContractInDb.provider,
+                consumer = latestContractInDb.consumer,
+                contractType = latestContractInDb.contractType,
+                contract = reserializeContract(latestContractInDb.contract),
+                version = latestContractInDb.version,
+                createdAt = latestContractInDb.createdAt
+            )
+
+            val jsonUnderTest = contractUnderTest.contract
+            val jsonParameter = contractInDb.contract
+
+            if (jsonCompare(jsonUnderTest, jsonParameter.toString())) {
+                ResponseEntity.ok(mapOf("canDeploy" to true, "message" to "Contract can be deployed",
+                    "jsonUnderTest" to contractUnderTest, "jsonParameter" to contractInDb))
+            } else {
+                ResponseEntity.ok(mapOf("canDeploy" to false, "message" to "Contract cannot be deployed",
+                    "jsonUnderTest" to contractUnderTest, "jsonParameter" to contractInDb))
+            }
+        } else {
+            ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(mapOf("success" to false, "message" to "No contract found to compare"))
+        }
+    }
 }
