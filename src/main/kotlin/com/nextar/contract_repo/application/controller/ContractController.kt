@@ -29,11 +29,11 @@ class ContractController(private val contractService: ContractService) {
 
         val contract = contractService.createContractFromRequest(request)
 
-        val savedContract = contractService.saveContract(contract)
+        //val savedContract = contractService.saveContract(contract)
         return ResponseEntity.status(HttpStatus.CREATED)
             .body(mapOf(
                 "success" to true,"message" to "Contract created successfully to model id ${request.modelId}",
-                "data" to savedContract))
+                "data" to contract))
     }
 
     @GetMapping("/latest-version")
