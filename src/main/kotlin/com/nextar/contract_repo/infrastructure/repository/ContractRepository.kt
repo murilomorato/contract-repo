@@ -23,4 +23,6 @@ interface ContractRepository : MongoRepository<Contract, String> {
     )
     fun findAllLatestVersionsOnePerModelId(): List<Contract>?
 
+    fun findAllByModelId(modelId: Int): List<Contract>?
+
 }

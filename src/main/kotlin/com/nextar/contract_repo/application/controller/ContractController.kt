@@ -2,6 +2,7 @@ package com.nextar.contract_repo.application.controller
 
 import com.nextar.contract_repo.application.dto.CreateContractRequest
 import com.nextar.contract_repo.application.dto.GetAllContractsLatestVersions
+import com.nextar.contract_repo.application.dto.GetAllVersionsOfContract
 import com.nextar.contract_repo.application.dto.GetLatestContractRequest
 import com.nextar.contract_repo.domain.service.ContractService
 import com.nextar.contract_repo.domain.service.jsonCompare
@@ -130,5 +131,31 @@ class ContractController(private val contractService: ContractService) {
         }
     }
 
+    @GetMapping("/getAllVersionsOfContract")
+    fun getAllVersionsOfContract(@RequestParam("model_id") modelId: Int,): ResponseEntity<Any> {
+
+        val contractList = contractService.getAllVersionsOfContract(modelId)
+        return if (contractList != null) {
+
+            val contractListInDTO = mutableListOf<GetAllVersionsOfContract>()
+            contractList.forEach(){
+                contractListInDTO.add(GetAllVersionsOfContract(
+                    id = it.id,
+                    sentBy = it.sentBy,
+                    contractType = it.contractType,
+                    modelId = it.modelId,
+                    provider = it.provider,
+                    consumer = it.consumer,
+                    contract = reserializeContract(it.contract),
+                    version = it.version,
+                    createdAt = it.createdAt
+                ))
+            }
+            ResponseEntity.ok(contractListInDTO)
+        } else {
+            ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(mapOf("success" to false, "message" to "No contracts found") )
+        }
+    }
 
 }

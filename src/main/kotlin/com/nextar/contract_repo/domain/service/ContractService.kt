@@ -65,4 +65,9 @@ class ContractService(private val contractRepository: ContractRepository, privat
         return contractRepository.findAllLatestVersionsOnePerModelId()
     }
 
+    /** Retorna todas versões de um determinado contrato. */
+    fun getAllVersionsOfContract(modelId: Int): List<Contract>? {
+        return contractRepository.findAllByModelId(modelId)
+    }
+
 }
